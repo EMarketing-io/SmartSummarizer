@@ -1,5 +1,3 @@
-# main.py
-
 import os
 import re
 import tempfile
@@ -13,16 +11,19 @@ from Audio.transcription import transcribe_audio
 from Audio.summarizer import generate_summary
 from Audio.doc_generator import generate_docx as create_audio_doc
 from Audio.drive_utils import upload_file_to_drive_in_memory, download_audio_from_drive
-from Audio.config import GOOGLE_DRIVE_API_KEY  # ✅ THIS FIXES THE AUTH MODE
+from Audio.config import GOOGLE_DRIVE_API_KEY 
+
 
 def format_website_name(url):
     domain = re.sub(r"https?://(www\.)?", "", url).split("/")[0]
     domain_parts = domain.split(".")
     return " ".join([part.capitalize() for part in domain_parts if part])
 
+
 def extract_drive_file_id(link):
     match = re.search(r"/d/([a-zA-Z0-9_-]+)", link)
     return match.group(1) if match else None
+
 
 def process_website(url, custom_name=None):
     print(f"\n🌐 Processing website: {url}")
@@ -33,6 +34,7 @@ def process_website(url, custom_name=None):
     upload_docx_to_gdrive(doc_stream, f"{name} Website Summary.docx")
     print("✅ Website summary uploaded to Google Drive.")
 
+
 def process_audio(drive_link, company_name, meeting_date):
     print(f"\n🔊 Processing audio for: {company_name} on {meeting_date}")
     file_id = extract_drive_file_id(drive_link)
@@ -41,7 +43,9 @@ def process_audio(drive_link, company_name, meeting_date):
         return
 
     print("📥 Downloading audio...")
-    audio_path = download_audio_from_drive(file_id, api_key=GOOGLE_DRIVE_API_KEY)  # ✅ FORCES PUBLIC ACCESS
+    audio_path = download_audio_from_drive(
+        file_id, api_key=GOOGLE_DRIVE_API_KEY
+    )
 
     print("📝 Transcribing audio...")
     transcript = transcribe_audio(audio_path)
@@ -53,10 +57,13 @@ def process_audio(drive_link, company_name, meeting_date):
     docx_file = create_audio_doc(summary_data, company_name, meeting_date)
 
     final_name = f"{company_name} Meeting Notes.docx"
-    upload_file_to_drive_in_memory(docx_file, folder_id="1ngGsk7hSe-yOTUz17kfQLtTwXaWbSCMt", final_name=final_name)
+    upload_file_to_drive_in_memory(
+        docx_file, folder_id="1ngGsk7hSe-yOTUz17kfQLtTwXaWbSCMt", final_name=final_name
+    )
 
     os.remove(audio_path)
     print("✅ Audio summary uploaded to Google Drive.")
+
 
 def main():
     print("📦 Welcome to Summarizer Main Interface")
@@ -80,6 +87,7 @@ def main():
             print("⚠️ Audio processing skipped. Company name and date are required.")
         else:
             process_audio(audio_link, audio_name, meeting_date)
+
 
 if __name__ == "__main__":
     main()
